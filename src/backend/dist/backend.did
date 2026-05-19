@@ -1,0 +1,173 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
+type _ImmutableObjectStorageRefillResult = 
+ record {
+   success: opt bool;
+   topped_up_amount: opt nat;
+ };
+type _ImmutableObjectStorageRefillInformation = record {
+                                                  proposed_top_up_amount:
+                                                   opt nat;};
+type _ImmutableObjectStorageCreateCertificateResult = 
+ record {
+   blob_hash: text;
+   method: text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = 
+ record {
+   createdAt: Time;
+   email: text;
+   fullName: text;
+   walletAddress: text;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
+ };
+type TokenPurchaseValidation = 
+ record {
+   errorMessage: opt text;
+   isValid: bool;
+   sanitizedAmount: nat;
+ };
+type TmuIresPopupContent = 
+ record {
+   additionalLinks: text;
+   description: text;
+   documentationLink: text;
+   title: text;
+   videoLink: text;
+ };
+type Time = int;
+type StripeSessionStatus = 
+ variant {
+   completed: record {
+                response: text;
+                userPrincipal: opt text;
+              };
+   failed: record {error: text;};
+ };
+type StripeConfiguration = 
+ record {
+   allowedCountries: vec text;
+   secretKey: text;
+ };
+type ShoppingItem = 
+ record {
+   currency: text;
+   priceInCents: nat;
+   productDescription: text;
+   productName: text;
+   quantity: nat;
+ };
+type ResourcePageContent = 
+ record {
+   architectureLayers: vec ArchitectureLayer;
+   guides: vec Guide;
+   resources: vec Resource;
+ };
+type Resource = 
+ record {
+   filePath: text;
+   title: text;
+ };
+type PurchaseSummary = 
+ record {
+   amount: nat;
+   fee: nat;
+   price: nat;
+   total: nat;
+ };
+type ProjectType = 
+ variant {
+   learnMore;
+   multiButton;
+   website;
+ };
+type Project = 
+ record {
+   additionalButtons: opt vec text;
+   category: text;
+   imageId: opt text;
+   projectDescription: text;
+   projectName: text;
+   projectType: ProjectType;
+   url: text;
+ };
+type Guide = 
+ record {
+   description: text;
+   title: text;
+ };
+type ContentType = 
+ variant {
+   homepage;
+   iomHybridPopup;
+   projects;
+   resource;
+   roadmap;
+   signup;
+   tmuIresPopup;
+   tokenomics;
+   web2Web3;
+   whitePaper;
+ };
+type ArchitectureLayer = 
+ record {
+   description: text;
+   title: text;
+ };
+service : {
+  _immutableObjectStorageBlobsAreLive: (hashes: vec blob) -> (vec bool) query;
+  _immutableObjectStorageBlobsToDelete: () -> (vec blob) query;
+  _immutableObjectStorageConfirmBlobDeletion: (blobs: vec blob) -> ();
+  _immutableObjectStorageCreateCertificate: (blobHash: text) ->
+   (_ImmutableObjectStorageCreateCertificateResult);
+  _immutableObjectStorageRefillCashier: (refillInformation:
+   opt _ImmutableObjectStorageRefillInformation) ->
+   (_ImmutableObjectStorageRefillResult);
+  _immutableObjectStorageUpdateGatewayPrincipals: () -> ();
+  _initializeAccessControl: () -> ();
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  calculatePurchaseSummary: (tokenAmount: int) -> (PurchaseSummary) query;
+  createCheckoutSession: (items: vec ShoppingItem, successUrl: text,
+   cancelUrl: text) -> (text);
+  getCallerUserProfile: () -> (opt UserProfile) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getContent: (_contentType: ContentType) -> (text) query;
+  getProjects: () -> (vec Project) query;
+  getResourcePageContent: () -> (ResourcePageContent) query;
+  getStripeSessionStatus: (sessionId: text) -> (StripeSessionStatus);
+  getTmuIresPopupContent: () -> (TmuIresPopupContent) query;
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  isCallerAdmin: () -> (bool) query;
+  isStripeConfigured: () -> (bool) query;
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  saveSocialEdificationImage: (imageId: text) -> ();
+  searchUserProfiles: (searchText: text) -> (vec UserProfile) query;
+  setStripeConfiguration: (config: StripeConfiguration) -> ();
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  validateTokenAmount: (amount: int) -> (TokenPurchaseValidation) query;
+}
